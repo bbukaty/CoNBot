@@ -1,0 +1,21 @@
+train data
+game capture : (left 1, right 0, up 0, down 0)
+game capture : (left 0, right 1, up 0, down 1)
+
+run time:
+key states = 0, 0, 0, 0
+model predicts left 1, right 0 ...
+key states -> 1, 0, 0, 0
+push left key down
+
+key states = 1, 0, 0, 0
+model predicts left 0, right 0 ...
+key states -> , 0, 0, 0
+release left key down 
+
+
+
+
+00000000001111110000000011111100000000001101101100
+          V     ^       V     ^         V ^V ^V ^
+
