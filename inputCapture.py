@@ -7,23 +7,22 @@ import cv2
 from PIL import ImageGrab
 
 class InputCapture:
-    def __init__(self, gameWindowName="Crypt of the NecroDancer", dt=1/6.0):
-        self.actionKeys = ["Down","Up","Right","Left"]
-        self.capNumber = 0
-        self.isCapturing = True
+    def __init__(self, gameWindowName="Crypt of the NecroDancer", dt=1/10.0):
+        self.gameWindowName = gameWindowName
         self.dt = dt
 
-        self.gameWindowName = gameWindowName
+        self.actionKeys = ["Down","Up","Right","Left"]
+        self.capNumber = 0
+        self.capsFolder = "caps/testing/"
+        self.isCapturing = True
 
-        # weird pywingui stuff to get the window size for the game
-        # only way to access window objects is by iterating through a list of them??
-        game_bbox = [None]
-        def enumForBbox(window, bbox_list):
-            if win32gui.GetWindowText(window) == gameWindowName:
-                win32gui.SetForegroundWindow(window)
-                bbox_list[0] = win32gui.GetWindowRect(window)
-        win32gui.EnumWindows(enumForBbox, game_bbox)
-        self.gameBbox = game_bbox[0]
+        self.gameWindow = win32gui.FindWindow(None, gameWindowName)
+        if self.gameWindow == 0:
+            print "Could not find game window for \"" + self.gameWindowName + "\". Exiting."
+            exit()
+        win32gui.SetForegroundWindow(self.gameWindow)
+        self.gameBbox = win32gui.GetWindowRect(self.gameWindow)
+        print self.gameBbox
 
         self.captureThread = threading.Thread(target=self.captureFrames)
         
@@ -40,11 +39,12 @@ class InputCapture:
         pythoncom.PumpMessages()
         
     def captureFrames(self):
+        # TODO: see if using windows api calls is faster https://www.quora.com/How-can-we-take-screenshots-using-Python-in-Windows
         while self.isCapturing:
             try:
                 tic = time.time()
                 cap =  np.array(ImageGrab.grab(self.gameBbox))
-                cv2.imwrite("caps/"+ str(self.capNumber) + ".png", cv2.cvtColor(cap, cv2.COLOR_BGR2RGB))
+                cv2.imwrite(self.capsFolder + str(self.capNumber) + ".png", cv2.cvtColor(cap, cv2.COLOR_BGR2RGB))
                 # print('Caploop: {}'.format(self.capNumber))
                 self.capNumber += 1
 
@@ -67,7 +67,7 @@ class InputCapture:
         # print event.Key
         if event.Key in self.actionKeys:
             cap = np.array(ImageGrab.grab(self.gameBbox))
-            cv2.imwrite("caps/"+ str(self.capNumber) + event.Key + ".png", cv2.cvtColor(cap, cv2.COLOR_BGR2RGB))
+            cv2.imwrite(self.capsFolder + str(self.capNumber) + event.Key + ".png", cv2.cvtColor(cap, cv2.COLOR_BGR2RGB))
             # print('KeyboardEvent: {}'.format(self.capNumber))
             self.capNumber += 1
         elif event.Key == "Escape":
