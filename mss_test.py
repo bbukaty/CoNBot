@@ -1,4 +1,5 @@
 import time
+import os, shutil
 import threading
 import pythoncom, pyHook 
 import numpy as np
@@ -12,28 +13,20 @@ import mss.tools
 
 class InputCapture:
     def __init__(self, gameWindowName, dt):
-        self.gameWindowName = gameWindowName
         self.dt = dt
 
-        self.capNumber = 0
         self.capsFolder = "caps/testing/"
+        shutil.rmtree(self.capsFolder)
+        os.mkdir(self.capsFolder)
+
+        self.capNumber = 0
         self.isCapturing = True
         self.sct = mss.mss()
 
         self.actionKeys = ["Down","Up","Right","Left"]
         self.inputQueue = Queue()
 
-        gameWindow = win32gui.FindWindow(None, self.gameWindowName)
-        if gameWindow == 0:
-            print "Could not find game window for \"" + self.gameWindowName + "\". Exiting."
-            exit()
-        win32gui.SetForegroundWindow(gameWindow)
-
-        bbox = win32gui.GetWindowRect(gameWindow)
-        width = bbox[2]-bbox[0]
-        height = bbox[3]-bbox[1]
-        # TODO: fix borders around window
-        self.gameBbox = {'top': bbox[1], 'left': bbox[0], 'width': width, 'height': height}
+        self.gameBbox = self.getWindowBbox(gameWindowName)
 
         self.captureThread = threading.Thread(target=self.captureFrames)
         self.captureThread.start()
@@ -47,6 +40,19 @@ class InputCapture:
         hm.HookKeyboard()
         # wait forever
         pythoncom.PumpMessages()
+
+    def getWindowBbox(self, windowName):
+        gameWindow = win32gui.FindWindow(None, windowName)
+        if gameWindow == 0:
+            print "Could not find game window for \"" + windowName + "\". Exiting."
+            exit()
+        win32gui.SetForegroundWindow(gameWindow)
+
+        bbox = win32gui.GetWindowRect(gameWindow)
+        width = bbox[2]-bbox[0]
+        height = bbox[3]-bbox[1]
+        # TODO: fix borders around window
+        return {'top': bbox[1], 'left': bbox[0], 'width': width, 'height': height}
         
     def captureFrames(self):
         # TODO: see if using windows api calls is faster https://www.quora.com/How-can-we-take-screenshots-using-Python-in-Windows
@@ -97,5 +103,6 @@ class InputCapture:
 
 
 if __name__ == '__main__':
-    # "Crypt of the NecroDancer"
-    inputCapture = InputCapture("Risk of Rain", 1/2.0)
+    g1 = "Crypt of the NecroDancer"
+    g2 = "Risk of Rain"
+    inputCapture = InputCapture(g2, 1/14.0)
