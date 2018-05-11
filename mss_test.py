@@ -1,15 +1,12 @@
 import time
 import os, shutil
 import threading
-import pythoncom, pyHook 
-import numpy as np
+from pynput.keyboard import Key, Listener
 import win32gui
 from Queue import Queue
 
 import mss
 import mss.tools
-# import cv2
-# from PIL import ImageGrab
 
 class InputCapture:
     def __init__(self, gameWindowName, dt):
@@ -24,6 +21,7 @@ class InputCapture:
         self.sct = mss.mss()
 
         self.actionKeys = ["Down","Up","Right","Left"]
+        self.keyCodes = [Key.down, Key.up, Key.right, Key.left]
         self.inputQueue = Queue()
 
         self.gameBbox = self.getWindowBbox(gameWindowName)
@@ -31,15 +29,10 @@ class InputCapture:
         self.captureThread = threading.Thread(target=self.captureFrames)
         self.captureThread.start()
 
-        #insert code here for running other things
-        # create a hook manager
-        hm = pyHook.HookManager()
-        # watch for keyboard events
-        hm.KeyDown = self.onKeyboardEvent
-        # set the hook
-        hm.HookKeyboard()
-        # wait forever
-        pythoncom.PumpMessages()
+        with Listener(on_press=self.onKeyboardEvent,on_release=self.onKeyboardEvent) as listener:
+            print "Joining key listener..."
+            listener.join()
+            print "Joined."
 
     def getWindowBbox(self, windowName):
         gameWindow = win32gui.FindWindow(None, windowName)
@@ -60,7 +53,7 @@ class InputCapture:
             tic = time.time()
             actionCombo = ''
             while not self.inputQueue.empty():
-                actionCombo +=  '_' + self.inputQueue.get()
+                actionCombo +=  '_{}'.format(self.inputQueue.get())
             
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
@@ -76,31 +69,17 @@ class InputCapture:
                 sleepAmount = 0
             time.sleep(sleepAmount)
 
-
-
-    def onKeyboardEvent(self, event):
-        # print 'MessageName:',event.MessageName
-        # print 'Time:',event.Time
-        # print 'WindowName:',event.WindowName
-        # print 'Ascii:', event.Ascii
-        # print 'Key:', event.Key
-        # print '---'
-        # print event.Key
-        if event.Key in self.actionKeys:
-            self.inputQueue.put(event.Key)
-            # print('KeyboardEvent: {}'.format(self.capNumber))
-        elif event.Key == "Escape":
+    def onKeyboardEvent(self, key):
+        if key in self.keyCodes:
+            self.inputQueue.put(key)
+        elif key == Key.esc:
+            # stop the game capture thread
             self.isCapturing = False
             print('Waiting for thread...')
             self.captureThread.join()
             print('Thread joined, exiting.')
-            exit()
-    
- 
-        # return True to pass the event to other handlers
-        return True
-
-
+            # stop the keyboard listener thread
+            return False
 
 if __name__ == '__main__':
     g1 = "Crypt of the NecroDancer"
