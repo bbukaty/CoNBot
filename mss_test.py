@@ -11,7 +11,7 @@ import mss.tools
 # from PIL import ImageGrab
 
 class InputCapture:
-    def __init__(self, dt, gameWindowName="Crypt of the NecroDancer"):
+    def __init__(self, gameWindowName, dt):
         self.gameWindowName = gameWindowName
         self.dt = dt
 
@@ -28,20 +28,20 @@ class InputCapture:
             print "Could not find game window for \"" + self.gameWindowName + "\". Exiting."
             exit()
         win32gui.SetForegroundWindow(gameWindow)
-        bbox = win32gui.GetWindowRect(gameWindow)
 
+        bbox = win32gui.GetWindowRect(gameWindow)
         width = bbox[2]-bbox[0]
         height = bbox[3]-bbox[1]
+        # TODO: fix borders around window
         self.gameBbox = {'top': bbox[1], 'left': bbox[0], 'width': width, 'height': height}
 
         self.captureThread = threading.Thread(target=self.captureFrames)
-        
         self.captureThread.start()
 
         #insert code here for running other things
         # create a hook manager
         hm = pyHook.HookManager()
-        # watch for all mouse events
+        # watch for keyboard events
         hm.KeyDown = self.onKeyboardEvent
         # set the hook
         hm.HookKeyboard()
@@ -52,9 +52,9 @@ class InputCapture:
         # TODO: see if using windows api calls is faster https://www.quora.com/How-can-we-take-screenshots-using-Python-in-Windows
         while self.isCapturing:
             tic = time.time()
-            actionCombo = ""
+            actionCombo = ''
             while not self.inputQueue.empty():
-                actionCombo += self.inputQueue.get()
+                actionCombo +=  '_' + self.inputQueue.get()
             
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
@@ -81,7 +81,7 @@ class InputCapture:
         # print '---'
         # print event.Key
         if event.Key in self.actionKeys:
-            self.inputQueue.put('_'+event.Key)
+            self.inputQueue.put(event.Key)
             # print('KeyboardEvent: {}'.format(self.capNumber))
         elif event.Key == "Escape":
             self.isCapturing = False
@@ -97,4 +97,5 @@ class InputCapture:
 
 
 if __name__ == '__main__':
-    inputCapture = InputCapture(1/2.0)
+    # "Crypt of the NecroDancer"
+    inputCapture = InputCapture("Risk of Rain", 1/2.0)
