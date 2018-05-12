@@ -1,5 +1,5 @@
 import time
-import os, shutil
+import os
 import threading
 from Queue import Queue
 import win32gui
@@ -12,8 +12,10 @@ class InputCapture:
     def __init__(self, gameWindowName, dt):
         self.dt = dt
 
-        self.capsFolder = "caps/testing/"
-        shutil.rmtree(self.capsFolder)
+        try:
+            self.capsFolder = "caps/" + str(int(max(os.listdir("caps"))) + 1) + "/"
+        except:
+            self.capsFolder = "caps/1/"
         os.mkdir(self.capsFolder)
 
         self.capNumber = 0
@@ -41,11 +43,13 @@ class InputCapture:
             exit()
         win32gui.SetForegroundWindow(gameWindow)
 
-        bbox = win32gui.GetWindowRect(gameWindow)
+        bbox = list(win32gui.GetWindowRect(gameWindow))
+        bbox[0] += 8
+        bbox[1] += 31
         width = bbox[2]-bbox[0]
         height = bbox[3]-bbox[1]
         # TODO: fix borders around window
-        return {'top': bbox[1], 'left': bbox[0], 'width': width, 'height': height}
+        return {'top': bbox[1], 'left': bbox[0], 'width': width-8, 'height': height-8}
         
     def captureFrames(self):
         # TODO: see if using windows api calls is faster https://www.quora.com/How-can-we-take-screenshots-using-Python-in-Windows
@@ -54,11 +58,11 @@ class InputCapture:
             while not self.inputQueue.empty():
                 currInput, isPress = self.inputQueue.get()
                 self.keyStates[currInput] = isPress
+            
             pressedList = ''
             for keyName, keyCode in zip(self.keyNames, self.keyCodes):
                 pressedList += keyName if self.keyStates[keyCode] else ''
 
-            
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
             # Save to the picture file
