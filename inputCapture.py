@@ -1,87 +1,99 @@
 import time
+import os
 import threading
-import pythoncom, pyHook 
-import numpy as np
+from Queue import Queue
 import win32gui
-import cv2
-from PIL import ImageGrab
+import mss
+import mss.tools
+from pynput.keyboard import Key, Listener
+
 
 class InputCapture:
-    def __init__(self, gameWindowName="Crypt of the NecroDancer", dt=1/10.0):
-        self.gameWindowName = gameWindowName
+    def __init__(self, gameWindowName, dt):
         self.dt = dt
 
-        self.actionKeys = ["Down","Up","Right","Left"]
-        self.capNumber = 0
-        self.capsFolder = "caps/testing/"
-        self.isCapturing = True
+        try:
+            self.capsFolder = "caps/" + str(int(max(os.listdir("caps"))) + 1) + "/"
+        except:
+            self.capsFolder = "caps/1/"
+        os.mkdir(self.capsFolder)
 
-        self.gameWindow = win32gui.FindWindow(None, gameWindowName)
-        if self.gameWindow == 0:
-            print "Could not find game window for \"" + self.gameWindowName + "\". Exiting."
-            exit()
-        win32gui.SetForegroundWindow(self.gameWindow)
-        self.gameBbox = win32gui.GetWindowRect(self.gameWindow)
-        print self.gameBbox
+        self.capNumber = 0
+        self.isCapturing = True
+        self.sct = mss.mss()
+
+        self.keyNames = ["Down","Up","Right","Left"]
+        self.keyCodes = [Key.down, Key.up, Key.right, Key.left]
+        self.keyStates = {keyCode : False for keyCode in self.keyCodes}
+        self.inputQueue = Queue()
+
+        self.gameBbox = self.getWindowBbox(gameWindowName)
 
         self.captureThread = threading.Thread(target=self.captureFrames)
-        
         self.captureThread.start()
 
-        #insert code here for running other things
-        # create a hook manager
-        hm = pyHook.HookManager()
-        # watch for all mouse events
-        hm.KeyDown = self.onKeyboardEvent
-        # set the hook
-        hm.HookKeyboard()
-        # wait forever
-        pythoncom.PumpMessages()
+        with Listener(on_press=self.onKeyPress,on_release=self.onKeyRelease) as listener:
+            listener.join()
+            print "Listener thread joined."
+
+    def getWindowBbox(self, windowName):
+        gameWindow = win32gui.FindWindow(None, windowName)
+        if gameWindow == 0:
+            print "Could not find game window for \"" + windowName + "\". Exiting."
+            exit()
+        win32gui.SetForegroundWindow(gameWindow)
+
+        bbox = list(win32gui.GetWindowRect(gameWindow))
+        bbox[0] += 8
+        bbox[1] += 31
+        width = bbox[2]-bbox[0]
+        height = bbox[3]-bbox[1]
+        # TODO: fix borders around window
+        return {'top': bbox[1], 'left': bbox[0], 'width': width-8, 'height': height-8}
         
     def captureFrames(self):
         # TODO: see if using windows api calls is faster https://www.quora.com/How-can-we-take-screenshots-using-Python-in-Windows
         while self.isCapturing:
-            try:
-                tic = time.time()
-                cap =  np.array(ImageGrab.grab(self.gameBbox))
-                cv2.imwrite(self.capsFolder + str(self.capNumber) + ".png", cv2.cvtColor(cap, cv2.COLOR_BGR2RGB))
-                # print('Caploop: {}'.format(self.capNumber))
-                self.capNumber += 1
+            tic = time.time()
+            while not self.inputQueue.empty():
+                currInput, isPress = self.inputQueue.get()
+                self.keyStates[currInput] = isPress
+            
+            pressedList = ''
+            for keyName, keyCode in zip(self.keyNames, self.keyCodes):
+                pressedList += keyName if self.keyStates[keyCode] else ''
 
-                sleepAmount = self.dt-(time.time()-tic)
-                if sleepAmount < 0:
-                    print 'Lagging, missed frame by {}'.format(-sleepAmount)
-                    sleepAmount = 0
-                time.sleep(sleepAmount)
-            except IOError:
-                pass
+            # Grab the data
+            sct_img = self.sct.grab(self.gameBbox)
+            # Save to the picture file
+            fileName = self.capsFolder + str(self.capNumber) + pressedList + ".png"
+            mss.tools.to_png(sct_img.rgb, sct_img.size, output=fileName)
 
-
-    def onKeyboardEvent(self, event):
-        # print 'MessageName:',event.MessageName
-        # print 'Time:',event.Time
-        # print 'WindowName:',event.WindowName
-        # print 'Ascii:', event.Ascii
-        # print 'Key:', event.Key
-        # print '---'
-        # print event.Key
-        if event.Key in self.actionKeys:
-            cap = np.array(ImageGrab.grab(self.gameBbox))
-            cv2.imwrite(self.capsFolder + str(self.capNumber) + event.Key + ".png", cv2.cvtColor(cap, cv2.COLOR_BGR2RGB))
-            # print('KeyboardEvent: {}'.format(self.capNumber))
             self.capNumber += 1
-        elif event.Key == "Escape":
+
+            sleepAmount = self.dt-(time.time()-tic)
+            if sleepAmount < 0:
+                print 'Lagging, missed frame by {}'.format(-sleepAmount)
+                sleepAmount = 0
+            time.sleep(sleepAmount)
+
+    def onKeyPress(self, key):
+        if key in self.keyCodes:
+            self.inputQueue.put((key, True))
+        elif key == Key.esc:
+            # stop the game capture thread
             self.isCapturing = False
             print('Waiting for thread...')
             self.captureThread.join()
             print('Thread joined, exiting.')
-            exit()
+            # stop the keyboard listener thread
+            return False
     
- 
-        # return True to pass the event to other handlers
-        return True
-
-
+    def onKeyRelease(self, key):
+        if key in self.keyCodes:
+            self.inputQueue.put((key, False))
 
 if __name__ == '__main__':
-    inputCapture = InputCapture()
+    g1 = "Crypt of the NecroDancer"
+    g2 = "Risk of Rain"
+    inputCapture = InputCapture(g1, 1/14.0)
