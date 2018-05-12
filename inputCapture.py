@@ -22,10 +22,11 @@ class InputCapture:
         self.isCapturing = True
         self.sct = mss.mss()
 
-        self.keyNames = ["Down","Up","Right","Left"]
-        self.keyCodes = [Key.down, Key.up, Key.right, Key.left]
+        self.keyNames = ["Up","Right","Down","Left"]
+        self.keyCodes = [Key.up, Key.right, Key.down, Key.left]
         self.keyStates = {keyCode : False for keyCode in self.keyCodes}
         self.inputQueue = Queue()
+        self.labelFile = open(self.capsFolder + "labels.txt", mode="a")
 
         self.gameBbox = self.getWindowBbox(gameWindowName)
 
@@ -35,6 +36,8 @@ class InputCapture:
         with Listener(on_press=self.onKeyPress,on_release=self.onKeyRelease) as listener:
             listener.join()
             print "Listener thread joined."
+        
+        self.labelFile.close()
 
     def getWindowBbox(self, windowName):
         gameWindow = win32gui.FindWindow(None, windowName)
@@ -59,14 +62,15 @@ class InputCapture:
                 currInput, isPress = self.inputQueue.get()
                 self.keyStates[currInput] = isPress
             
-            pressedList = ''
+            pressedList = '\n'
             for keyName, keyCode in zip(self.keyNames, self.keyCodes):
-                pressedList += keyName if self.keyStates[keyCode] else ''
+                pressedList += 'v' if self.keyStates[keyCode] else '^'
+            self.labelFile.write(pressedList)
 
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
             # Save to the picture file
-            fileName = self.capsFolder + str(self.capNumber) + pressedList + ".png"
+            fileName = self.capsFolder + str(self.capNumber) + ".png"
             mss.tools.to_png(sct_img.rgb, sct_img.size, output=fileName)
 
             self.capNumber += 1
