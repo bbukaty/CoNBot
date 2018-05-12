@@ -1,7 +1,7 @@
 import os
 import time
 import threading
-from Queue import Queue
+from queue import Queue
 import win32gui
 import mss
 import mss.tools
@@ -38,14 +38,14 @@ class InputCapture:
 
         with Listener(on_press=self.onKeyPress,on_release=self.onKeyRelease) as listener:
             listener.join()
-            print "Listener thread joined."
+            print("Listener thread joined.")
         
         self.labelFile.close()
 
     def getWindowBbox(self, windowName):
         gameWindow = win32gui.FindWindow(None, windowName)
         if gameWindow == 0:
-            print "Could not find game window for \"" + windowName + "\". Exiting."
+            print("Could not find game window for \"" + windowName + "\". Exiting.")
             exit()
         win32gui.SetForegroundWindow(gameWindow)
 
@@ -80,7 +80,7 @@ class InputCapture:
 
             sleepAmount = self.dt-(time.time()-tic)
             if sleepAmount < 0:
-                print 'Lagging, missed frame by {}'.format(-sleepAmount)
+                print('Lagging, missed frame by {}'.format(-sleepAmount))
                 sleepAmount = 0
             time.sleep(sleepAmount)
 

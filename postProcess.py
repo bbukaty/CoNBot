@@ -9,7 +9,7 @@ finalRes = 256
 for sessNum in os.listdir("sessions"):
     sessFolder = "sessions/{}/".format(sessNum)
     if os.path.isfile(sessFolder + "processed.sentinel"):
-        print "Session {} was already processed. Continuing.".format(sessNum)
+        print("Session {} was already processed. Continuing.".format(sessNum))
         continue
 
     with open(sessFolder + "labels.txt", "r") as labels:
