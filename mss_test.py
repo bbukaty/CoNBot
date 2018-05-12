@@ -1,12 +1,12 @@
 import time
 import os, shutil
 import threading
-from pynput.keyboard import Key, Listener
-import win32gui
 from Queue import Queue
-
+import win32gui
 import mss
 import mss.tools
+from pynput.keyboard import Key, Listener
+
 
 class InputCapture:
     def __init__(self, gameWindowName, dt):
@@ -20,8 +20,9 @@ class InputCapture:
         self.isCapturing = True
         self.sct = mss.mss()
 
-        self.actionKeys = ["Down","Up","Right","Left"]
+        self.keyNames = ["Down","Up","Right","Left"]
         self.keyCodes = [Key.down, Key.up, Key.right, Key.left]
+        self.keyStates = {keyCode : False for keyCode in self.keyCodes}
         self.inputQueue = Queue()
 
         self.gameBbox = self.getWindowBbox(gameWindowName)
@@ -29,10 +30,9 @@ class InputCapture:
         self.captureThread = threading.Thread(target=self.captureFrames)
         self.captureThread.start()
 
-        with Listener(on_press=self.onKeyboardEvent,on_release=self.onKeyboardEvent) as listener:
-            print "Joining key listener..."
+        with Listener(on_press=self.onKeyPress,on_release=self.onKeyRelease) as listener:
             listener.join()
-            print "Joined."
+            print "Listener thread joined."
 
     def getWindowBbox(self, windowName):
         gameWindow = win32gui.FindWindow(None, windowName)
@@ -51,14 +51,18 @@ class InputCapture:
         # TODO: see if using windows api calls is faster https://www.quora.com/How-can-we-take-screenshots-using-Python-in-Windows
         while self.isCapturing:
             tic = time.time()
-            actionCombo = ''
             while not self.inputQueue.empty():
-                actionCombo +=  '_{}'.format(self.inputQueue.get())
+                currInput, isPress = self.inputQueue.get()
+                self.keyStates[currInput] = isPress
+            pressedList = ''
+            for keyName, keyCode in zip(self.keyNames, self.keyCodes):
+                pressedList += keyName if self.keyStates[keyCode] else ''
+
             
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
             # Save to the picture file
-            fileName = self.capsFolder + str(self.capNumber) + actionCombo + ".png"
+            fileName = self.capsFolder + str(self.capNumber) + pressedList + ".png"
             mss.tools.to_png(sct_img.rgb, sct_img.size, output=fileName)
 
             self.capNumber += 1
@@ -69,9 +73,9 @@ class InputCapture:
                 sleepAmount = 0
             time.sleep(sleepAmount)
 
-    def onKeyboardEvent(self, key):
+    def onKeyPress(self, key):
         if key in self.keyCodes:
-            self.inputQueue.put(key)
+            self.inputQueue.put((key, True))
         elif key == Key.esc:
             # stop the game capture thread
             self.isCapturing = False
@@ -80,8 +84,12 @@ class InputCapture:
             print('Thread joined, exiting.')
             # stop the keyboard listener thread
             return False
+    
+    def onKeyRelease(self, key):
+        if key in self.keyCodes:
+            self.inputQueue.put((key, False))
 
 if __name__ == '__main__':
     g1 = "Crypt of the NecroDancer"
     g2 = "Risk of Rain"
-    inputCapture = InputCapture(g2, 1/14.0)
+    inputCapture = InputCapture(g1, 1/14.0)
