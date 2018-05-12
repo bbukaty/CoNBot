@@ -1,5 +1,5 @@
-import time
 import os
+import time
 import threading
 from Queue import Queue
 import win32gui
@@ -13,11 +13,15 @@ class InputCapture:
         self.dt = dt
 
         try:
-            self.capsFolder = "caps/" + str(int(max(os.listdir("caps"))) + 1) + "/"
+            sessNums = [int(folder) for folder in os.listdir("sessions")]
+            self.sessFolder = "sessions/" + str(max(sessNums)+1) + "/"
         except:
-            self.capsFolder = "caps/1/"
+            self.sessFolder = "sessions/1/"
+        os.mkdir(self.sessFolder)
+        self.capsFolder = self.sessFolder + "caps/"
         os.mkdir(self.capsFolder)
 
+        self.gameBbox = self.getWindowBbox(gameWindowName)
         self.capNumber = 0
         self.isCapturing = True
         self.sct = mss.mss()
@@ -26,9 +30,8 @@ class InputCapture:
         self.keyCodes = [Key.up, Key.right, Key.down, Key.left]
         self.keyStates = {keyCode : False for keyCode in self.keyCodes}
         self.inputQueue = Queue()
-        self.labelFile = open(self.capsFolder + "labels.txt", mode="a")
 
-        self.gameBbox = self.getWindowBbox(gameWindowName)
+        self.labelFile = open(self.sessFolder + "labels.txt", mode="a")
 
         self.captureThread = threading.Thread(target=self.captureFrames)
         self.captureThread.start()
@@ -62,10 +65,10 @@ class InputCapture:
                 currInput, isPress = self.inputQueue.get()
                 self.keyStates[currInput] = isPress
             
-            pressedList = '\n'
-            for keyName, keyCode in zip(self.keyNames, self.keyCodes):
+            pressedList = ''
+            for keyCode in self.keyCodes:
                 pressedList += 'v' if self.keyStates[keyCode] else '^'
-            self.labelFile.write(pressedList)
+            self.labelFile.write(pressedList+'\n')
 
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
