@@ -33,16 +33,21 @@ for sessNum in os.listdir("sessions"):
     # remove newline characters in labels (we wanted them for the rewrite above)
     inputSequence = [label[:-1] for label in inputSequence]
 
-    lastCapNum = len(os.listdir(capsFolder)) - 1
-    os.remove(capsFolder + str(lastCapNum) + ".png")
-    assert len(inputSequence) ==  len(os.listdir(capsFolder)), "buffer didn't work, mismatch between labels and images"
+    capFiles = os.listdir(capsFolder)	
+    capFileNums = [int(capFile[:-4]) for capFile in capFiles] # -4 index removes '.png'	
+    os.remove(capsFolder + str(max(capFileNums)) + ".png")
+    # get these again now that we've removed one, duct tape code lol
+    capFiles = os.listdir(capsFolder)
+    capFileNums = [int(capFile[:-4]) for capFile in capFiles] # -4 index removes '.png'	
+
+    assert len(inputSequence) ==  len(capFiles), "buffer didn't work, mismatch between labels and images"
 
     # downscale images and add to class folder
-    for capNum in range(len(inputSequence)):
-        cap = cv2.imread(capsFolder + str(capNum) + ".png")
+    for capFileIndex, capFileNum in enumerate(capFileNums):
+        cap = cv2.imread(capsFolder + str(capFileNum) + ".png")
         resized = cv2.resize(cap, (finalRes,finalRes), interpolation=downsamplingMethod)
-        capLabel = inputSequence[capNum]
-        cv2.imwrite("classes/" + capLabel + "/sess" + sessNum + "_" + str(capNum) + "_resized.png", resized)
+        capLabel = inputSequence[capFileIndex]
+        cv2.imwrite("classes/" + capLabel + "/sess" + sessNum + "_" + str(capFileNum) + "_resized.png", resized)
 
     # note that this batch has been processed
     open(sessFolder + "processed.sentinel", "w").close()
