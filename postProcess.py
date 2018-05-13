@@ -7,6 +7,7 @@ finalRes = 256
 # delete the first input and last image to shift the inputs back by one frame
 # also, downscale images
 for sessNum in os.listdir("sessions"):
+    print("Processing session {}...".format(sessNum))
     sessFolder = "sessions/{}/".format(sessNum)
     if os.path.isfile(sessFolder + "processed.sentinel"):
         print("Session {} was already processed. Continuing.".format(sessNum))
