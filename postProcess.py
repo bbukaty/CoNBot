@@ -3,15 +3,15 @@ import cv2
 import numpy as np
 
 validLabels = ["None","Up","Right","Down","Left"]
-for label in validLabels:
-    if not os.path.isdir("classes/"+label):
-        os.mkdir("classes/"+label)
+for labelIndex in range(len(validLabels)):
+    if not os.path.isdir("classes/"+str(labelIndex)):
+        os.mkdir("classes/"+str(labelIndex))
 
 finalRes = 128
 downsamplingMethods = [cv2.INTER_AREA, cv2.INTER_CUBIC, cv2.INTER_LINEAR, cv2.INTER_NEAREST]
 downsamplingMethod = downsamplingMethods[1]
 
-for sessNum in os.listdir("sessions")[:1]:
+for sessNum in os.listdir("sessions"):
     print("Processing session {}...".format(sessNum))
     sessFolder = "sessions/{}/".format(sessNum)
     capsFolder = sessFolder + "caps/"
