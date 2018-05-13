@@ -26,8 +26,8 @@ class InputCapture:
         self.isCapturing = True
         self.sct = mss.mss()
 
-        self.keyNames = ["Up","Right","Down","Left"]
         self.keyCodes = [Key.up, Key.right, Key.down, Key.left]
+        self.keyNames = {keyCode: keyName for keyCode, keyName in zip(self.keyCodes, ["Up","Right","Down","Left"])}
         self.keyStates = {keyCode : False for keyCode in self.keyCodes}
         self.inputQueue = Queue()
 
@@ -65,10 +65,13 @@ class InputCapture:
                 currInput, isPress = self.inputQueue.get()
                 self.keyStates[currInput] = isPress
             
-            pressedList = ''
-            for keyCode in self.keyCodes:
-                pressedList += 'v' if self.keyStates[keyCode] else '^'
-            self.labelFile.write(pressedList+'\n')
+            label = 'None'
+            for keyCode, keyState in self.keyStates.items():
+                if keyState == True:
+                    label = self.keyNames[keyCode]
+                    print("Warning: multiple inputs encountered, discarding everything but {}.".format(label))
+                    break # only get one button for every label
+            self.labelFile.write(label+'\n')
 
             # Grab the data
             sct_img = self.sct.grab(self.gameBbox)
@@ -85,7 +88,7 @@ class InputCapture:
             time.sleep(sleepAmount)
 
     def onKeyPress(self, key):
-        if key in self.keyCodes:
+        if key in self.keyCodes: # discard input not in the list of expected keys
             self.inputQueue.put((key, True))
         elif key == Key.esc:
             # stop the game capture thread
@@ -97,7 +100,7 @@ class InputCapture:
             return False
     
     def onKeyRelease(self, key):
-        if key in self.keyCodes:
+        if key in self.keyCodes: # discard input not in the list of expected keys
             self.inputQueue.put((key, False))
 
 if __name__ == '__main__':
