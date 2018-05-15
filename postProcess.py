@@ -1,15 +1,26 @@
 import os
-import cv2
 import numpy as np
+from PIL import Image, ImageOps
 
-validLabels = ["None","Up","Right","Down","Left"]
+downsamplingMethods = [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]
+downsamplingMethod = downsamplingMethods[0]
+
+# make folders for classes
+# validLabels = ["None","Up","Right","Down","Left"]
+validLabels = ["Up","Right","Down","Left"]
 for labelIndex in range(len(validLabels)):
-    if not os.path.isdir("classes/"+str(labelIndex)):
-        os.mkdir("classes/"+str(labelIndex))
+    if not os.path.isdir("classes/"+str(labelIndex+1)):
+        os.mkdir("classes/"+str(labelIndex+1))
 
-finalRes = 128
-downsamplingMethods = [cv2.INTER_AREA, cv2.INTER_CUBIC, cv2.INTER_LINEAR, cv2.INTER_NEAREST]
-downsamplingMethod = downsamplingMethods[1]
+# set up variables for dataset normalization statistics
+numTrain = 0
+for sessNum in os.listdir("sessions"):
+    numTrain += len(os.listdir("sessions/{}/caps".format(sessNum)))
+
+numTrain = 1986 #TODO: fix above for no none postprocessing, have a flag that you pass in for whether to use none label
+
+meanImage = np.zeros((180,180,3), np.float)
+meanImageSquared = np.zeros_like(meanImage)
 
 for sessNum in os.listdir("sessions"):
     print("Processing session {}...".format(sessNum))
@@ -39,16 +50,34 @@ for sessNum in os.listdir("sessions"):
     # get these again now that we've removed one, duct tape code lol
     capFiles = os.listdir(capsFolder)
     capFileNums = [int(capFile[:-4]) for capFile in capFiles] # -4 index removes '.png'	
-
+    capFileNums = sorted(capFileNums) # os.listdir gave us these in random order
+    
     assert len(inputSequence) ==  len(capFiles), "buffer didn't work, mismatch between labels and images"
 
     # downscale images and add to class folder
     for capFileIndex, capFileNum in enumerate(capFileNums):
-        cap = cv2.imread(capsFolder + str(capFileNum) + ".png")
-        resized = cv2.resize(cap, (finalRes,finalRes), interpolation=downsamplingMethod)
+        cap = Image.open(capsFolder + str(capFileNum) + ".png")
         capLabel = inputSequence[capFileIndex]
-        cv2.imwrite("classes/" + capLabel + "/sess" + sessNum + "_" + str(capFileNum) + "_resized.png", resized)
+
+        if capLabel == '0':
+            continue
+
+        # add padding, this makes the image a pixel-perfect 15x15 grid of Crypt tiles
+        padded = ImageOps.expand(cap, (30,38,26,18))
+        # each 'pixel' in the game is actually a 3x3 grid of pixels, so this first downscale by 3 has no data loss
+        resized = cap.resize((360,360), downsamplingMethod)
+        # now the lossy resize to the final size
+        final = resized.resize((180,180), downsamplingMethod)
+        final.save("classes/" + capLabel + "/sess" + sessNum + "_" + str(capFileNum) + "_resized.png")
+
+        # compute stats over training data
+        meanImage += np.array(final, np.float64) / numTrain
+        meanImageSquared += np.array(final, np.float64)**2 / numTrain
 
     # note that this batch has been processed
     open(sessFolder + "processed.sentinel", "w").close()
 
+stdImage = np.sqrt(meanImageSquared - meanImage**2)
+
+np.save("classes/dsetMean", meanImage)
+np.save("classes/dsetStd", stdImage)
