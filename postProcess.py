@@ -14,10 +14,8 @@ for labelIndex in range(len(validLabels)):
 
 # set up variables for dataset normalization statistics
 numTrain = 0
-for sessNum in os.listdir("sessions"):
-    numTrain += len(os.listdir("sessions/{}/caps".format(sessNum)))
-
-numTrain = 1986 #TODO: fix above for no none postprocessing, have a flag that you pass in for whether to use none label
+# for sessNum in os.listdir("sessions"):
+#     numTrain += len(os.listdir("sessions/{}/caps".format(sessNum)))
 
 meanImage = np.zeros((180,180,3), np.float)
 meanImageSquared = np.zeros_like(meanImage)
@@ -42,7 +40,11 @@ for sessNum in os.listdir("sessions"):
             labels.write(line)
 
     # remove newline characters in labels (we wanted them for the rewrite above)
+    # and count the number of nonzero training data
     inputSequence = [label[:-1] for label in inputSequence]
+    for label in inputSequence:
+        if label != '0':
+            numTrain += 1
 
     capFiles = os.listdir(capsFolder)	
     capFileNums = [int(capFile[:-4]) for capFile in capFiles] # -4 index removes '.png'	
@@ -53,6 +55,22 @@ for sessNum in os.listdir("sessions"):
     capFileNums = sorted(capFileNums) # os.listdir gave us these in random order
     
     assert len(inputSequence) ==  len(capFiles), "buffer didn't work, mismatch between labels and images"
+
+print(numTrain)
+
+for sessNum in os.listdir("sessions"):
+    print("Processing session {}...".format(sessNum))
+    sessFolder = "sessions/{}/".format(sessNum)
+    capsFolder = sessFolder + "caps/"
+
+    inputSequence = []
+    with open(sessFolder + "labels.txt", "r") as labels:
+        inputSequence = labels.readlines()
+    inputSequence = [label[:-1] for label in inputSequence]
+
+    capFiles = os.listdir(capsFolder)
+    capFileNums = [int(capFile[:-4]) for capFile in capFiles] # -4 index removes '.png'	
+    capFileNums = sorted(capFileNums) # os.listdir gave us these in random order
 
     # downscale images and add to class folder
     for capFileIndex, capFileNum in enumerate(capFileNums):
@@ -78,6 +96,5 @@ for sessNum in os.listdir("sessions"):
     open(sessFolder + "processed.sentinel", "w").close()
 
 stdImage = np.sqrt(meanImageSquared - meanImage**2)
-
-np.save("classes/dsetMean", meanImage)
-np.save("classes/dsetStd", stdImage)
+np.save("stats/dsetMean", meanImage)
+np.save("stats/dsetStd", stdImage)
