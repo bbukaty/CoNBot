@@ -11,5 +11,6 @@ for classNum in os.listdir("classes/images"):
         imgArr = np.array(Image.open(classFolder + imageName), np.float64)
         # os.remove(classFolder + imageName)
         normalized = (imgArr - meanImage) / stdImage
+        normalized[stdImage == 0] = 0
         
         np.save("classes/numpy/{}/".format(classNum) + imageName[:-4], normalized)
