@@ -4,6 +4,16 @@ from PIL import Image, ImageOps
 downsamplingMethods = [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]
 downsamplingMethod = downsamplingMethods[0]
 
+# make folders for classes
+validLabels = ["1","2","3","4"]
+classFolders = ["images", "numpy"]
+for classFolder in classFolders:
+    if not os.path.isdir("classes/{}/".format(classFolder)):
+        os.mkdir("classes/{}/".format(classFolder))
+    for label in validLabels:
+        if not os.path.isdir("classes/{}/{}/".format(classFolder, label)):
+            os.mkdir("classes/{}/{}/".format(classFolder, label))
+
 for sessNum in os.listdir("sessions"):
 
     print("Downscaling images from session {}...".format(sessNum))
@@ -38,7 +48,7 @@ for sessNum in os.listdir("sessions"):
         # add padding, this makes the image a pixel-perfect 15x15 grid of Crypt tiles
         padded = ImageOps.expand(cap, (30,38,26,18))
         # each 'pixel' in the game is actually a 3x3 grid of pixels, so this first downscale by 3 has no data loss
-        resized = cap.resize((360,360), downsamplingMethod)
+        resized = padded.resize((360,360), downsamplingMethod)
         # now the lossy resize to the final size
         final = resized.resize((180,180), downsamplingMethod)
         final.save("classes/images/" + capLabel + "/sess" + sessNum + "_" + str(capFileNum) + "_resized.png")

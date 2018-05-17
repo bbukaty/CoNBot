@@ -1,15 +1,5 @@
 import os
 
-# make folders for classes
-validLabels = ["1","2","3","4"]
-classFolders = ["images", "numpy"]
-for classFolder in classFolders:
-    if not os.path.isdir("classes/{}/".format(classFolder)):
-        os.mkdir("classes/{}/".format(classFolder))
-    for label in validLabels:
-        if not os.path.isdir("classes/{}/{}/".format(classFolder, label)):
-            os.mkdir("classes/{}/{}/".format(classFolder, label))
-
 # shift inputs for each session one frame backwards for more accurate timing
 for sessNum in os.listdir("sessions"):
     print("Adding input buffer to session {}...".format(sessNum))
