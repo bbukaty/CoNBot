@@ -11,7 +11,7 @@ from cloningCNN import CloningCNN
 
 from necroEnv import NecroEnv
 
-class BCAgent:
+class CloningAgent:
     def __init__(self):
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
@@ -56,4 +56,4 @@ class BCAgent:
 
 
 if __name__ == '__main__':
-    agent = BCAgent()
+    agent = CloningAgent()
