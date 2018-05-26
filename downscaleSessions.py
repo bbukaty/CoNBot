@@ -6,7 +6,7 @@ downsamplingMethod = downsamplingMethods[0]
 
 # make folders for classes
 validLabels = ["1","2","3","4"]
-classFolders = ["images", "numpy"]
+classFolders = ["downscaled", "normalized"]
 for classFolder in classFolders:
     if not os.path.isdir("classes/{}/".format(classFolder)):
         os.mkdir("classes/{}/".format(classFolder))
@@ -15,14 +15,13 @@ for classFolder in classFolders:
             os.mkdir("classes/{}/{}/".format(classFolder, label))
 
 for sessNum in os.listdir("sessions"):
-
     print("Downscaling images from session {}...".format(sessNum))
     sessFolder = "sessions/{}/".format(sessNum)
     capsFolder = sessFolder + "caps/"
 
-    if not os.path.isfile(sessFolder + "buffered.sentinel"):
-        print("Error: Session has not been input buffered yet. Skipping.")
-        continue
+    # if not os.path.isfile(sessFolder + "buffered.sentinel"):
+    #     print("Error: Session has not been input buffered yet. Skipping.")
+    #     continue
     if os.path.isfile(sessFolder + "downscaled.sentinel"):
         print("Error: Session has already been downscaled. Skipping.")
         continue
@@ -51,7 +50,7 @@ for sessNum in os.listdir("sessions"):
         resized = padded.resize((360,360), downsamplingMethod)
         # now the lossy resize to the final size
         final = resized.resize((180,180), downsamplingMethod)
-        final.save("classes/images/" + capLabel + "/sess" + sessNum + "_" + str(capFileNum) + "_resized.png")
+        final.save("classes/downscaled/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
     
     # note that this batch has been processed
     open(sessFolder + "downscaled.sentinel", "w").close()

@@ -8,22 +8,20 @@ import mss.tools
 from pynput.keyboard import Key, Listener
 
 
-class InputCapture:
-    def __init__(self, gameWindowName, dt, sessionsFolder):
+class NecroCapture:
+    def __init__(self, dt):
         self.dt = dt
-        if not os.path.isdir(sessionsFolder):
-            print("Error: Sessions directory {} is not a valid directory. Aborting.".format(sessionsFolder))
-            exit()
+
         try:
-            sessNums = [int(folderName) for folderName in os.listdir(sessionsFolder)]
-            self.sessFolder = "{}/{}/".format(sessionsFolder, max(sessNums)+1)
+            sessNums = [int(folderName) for folderName in os.listdir("sessions")]
+            self.sessFolder = "sessions/{}/".format(max(sessNums)+1)
         except:
-            self.sessFolder = "{}/1/".format(sessionsFolder)
+            self.sessFolder = "sessions/1/"
         os.mkdir(self.sessFolder)
         self.capsFolder = self.sessFolder + "caps/"
         os.mkdir(self.capsFolder)
 
-        self.gameBbox = self.getWindowBbox(gameWindowName)
+        self.gameBbox = self.getWindowBbox("Crypt of the NecroDancer")
         self.capNumber = 0
         self.isCapturing = True
         self.sct = mss.mss()
@@ -69,6 +67,4 @@ class InputCapture:
             return False
 
 if __name__ == '__main__':
-    g1 = "Crypt of the NecroDancer"
-    g2 = "Risk of Rain"
-    inputCapture = InputCapture(g1, 1/14.0, "sessions")
+    necroCapture = NecroCapture(1/14.0)
