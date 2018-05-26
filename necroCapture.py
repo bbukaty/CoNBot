@@ -1,7 +1,5 @@
 import os
 import time
-import threading
-from queue import Queue
 import win32gui
 import mss
 import mss.tools
@@ -24,7 +22,7 @@ class NecroCapture:
         self.gameBbox = self.getWindowBbox("Crypt of the NecroDancer")
         self.capNumber = 0
         self.isCapturing = True
-        self.sct = mss.mss()
+        self.capper = mss.mss()
 
         self.keys = {Key.up:1, Key.right:2, Key.down:3, Key.left:4}
 
@@ -55,10 +53,10 @@ class NecroCapture:
     def onKeyPress(self, key):
         if key in self.keys: # discard input not in the list of expected keys
             # Grab the data
-            sct_img = self.sct.grab(self.gameBbox)
+            screenCap = self.capper.grab(self.gameBbox)
             # Save to the picture file
             fileName = "{}{}.png".format(self.capsFolder, self.capNumber)
-            mss.tools.to_png(sct_img.rgb, sct_img.size, output=fileName)
+            mss.tools.to_png(screenCap.rgb, screenCap.size, output=fileName)
 
             self.labelFile.write("{}\n".format(self.keys[key]))
             self.capNumber += 1
