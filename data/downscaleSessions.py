@@ -6,7 +6,7 @@ downsamplingMethod = downsamplingMethods[0]
 
 # make folders for classes
 validLabels = ["1","2","3","4"]
-classFolders = ["downscaledIndiv", "downscaledQuad", "normalized"]
+classFolders = ["downscaledIndiv", "downscaledQuad", "224scaledIndiv", "normalized"]
 for classFolder in classFolders:
     if not os.path.isdir("classes/{}/".format(classFolder)):
         os.mkdir("classes/{}/".format(classFolder))
@@ -51,6 +51,8 @@ for sessNum in os.listdir("sessions"):
             resized = padded.resize((360,360), downsamplingMethod)
             # now the lossy resize to the final size
             final = resized.resize((180,180), downsamplingMethod)
+            final224 = cap.resize((224,224), downsamplingMethod) #no padding, this is for pretrained models
+            final224.save("classes/224scaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             final.save("classes/downscaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
         else: #reused code but whatever, sorry marty
             cap1 = Image.open(capsFolder + str(capFileNum) + ".png")
@@ -68,6 +70,8 @@ for sessNum in os.listdir("sessions"):
             resizedIndiv = paddedIndiv.resize((360,360), downsamplingMethod)
             # now the lossy resize to the final size
             finalIndiv = resizedIndiv.resize((180,180), downsamplingMethod)
+            final224Indiv = resizedIndiv.resize((224,224),downsamplingMethod)
+            final224Indiv.save("classes/224scaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             finalIndiv.save("classes/downscaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             # above saves just the first to special spot in case needed for other things (like stats)
             
