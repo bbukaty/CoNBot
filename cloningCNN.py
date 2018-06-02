@@ -30,7 +30,7 @@ class ResNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.resnet = models.resnet34(pretrained=False)
-        self.conv1 = nn.Conv2d(12, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.resnet.conv1 = nn.Conv2d(12, 64, kernel_size=7, stride=2, padding=3, bias=False)
 #         for param in self.resnet.parameters():
 #             param.requires_grad = False
         
