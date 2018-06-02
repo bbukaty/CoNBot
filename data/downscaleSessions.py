@@ -54,7 +54,7 @@ for sessNum in os.listdir("sessions"):
             final224 = cap.resize((224,224), downsamplingMethod) #no padding, this is for pretrained models
             final224.save("classes/224scaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             final.save("classes/downscaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
-        else: #reused code but whatever, sorry marty
+        else:
             cap1 = Image.open(capsFolder + str(capFileNum) + ".png")
             cap2 = Image.open(capsFolder + str(capFileNums[capFileIndex-1]) + ".png") #back in time
             cap3 = Image.open(capsFolder + str(capFileNums[capFileIndex-2]) + ".png") 
@@ -76,7 +76,7 @@ for sessNum in os.listdir("sessions"):
             finalIndiv.save("classes/downscaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             # above saves just the first to special spot in case needed for other things (like stats)
             
-            paddedCap2 = ImageOps.expand(cap2, (30,38,26,18)) #this is disgusting i know
+            paddedCap2 = ImageOps.expand(cap2, (30,38,26,18))
             paddedCap3 = ImageOps.expand(cap3, (30,38,26,18))
             paddedCap4 = ImageOps.expand(cap4, (30,38,26,18))
             
