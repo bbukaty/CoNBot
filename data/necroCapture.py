@@ -65,4 +65,5 @@ class NecroCapture:
             return False
 
 if __name__ == '__main__':
+    print("Move the windows taskbar!")
     necroCapture = NecroCapture(1/14.0)

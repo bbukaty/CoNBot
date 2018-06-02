@@ -6,7 +6,7 @@ downsamplingMethod = downsamplingMethods[0]
 
 # make folders for classes
 validLabels = ["1","2","3","4"]
-classFolders = ["downscaledIndiv", "downscaledQuad", "224scaledIndiv", "normalized"]
+classFolders = ["downscaledIndiv", "downscaledQuad", "224scaledIndiv", "224scaledQuad", "normalized"]
 for classFolder in classFolders:
     if not os.path.isdir("classes/{}/".format(classFolder)):
         os.mkdir("classes/{}/".format(classFolder))
@@ -70,7 +70,8 @@ for sessNum in os.listdir("sessions"):
             resizedIndiv = paddedIndiv.resize((360,360), downsamplingMethod)
             # now the lossy resize to the final size
             finalIndiv = resizedIndiv.resize((180,180), downsamplingMethod)
-            final224Indiv = resizedIndiv.resize((224,224),downsamplingMethod)
+            #final224Indiv = resizedIndiv.resize((224,224),downsamplingMethod) #oh fuck this is wrong
+            final224Indiv = cap1.resize((224,224),downsamplingMethod)
             final224Indiv.save("classes/224scaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             finalIndiv.save("classes/downscaledIndiv/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             # above saves just the first to special spot in case needed for other things (like stats)
@@ -87,6 +88,10 @@ for sessNum in os.listdir("sessions"):
             finalCap3 = resizedCap3.resize((180,180), downsamplingMethod)
             finalCap4 = resizedCap4.resize((180,180), downsamplingMethod)
             
+            final224Cap2 = cap2.resize((224,224),downsamplingMethod)
+            final224Cap3 = cap3.resize((224,224),downsamplingMethod)
+            final224Cap4 = cap4.resize((224,224),downsamplingMethod)
+            
             #https://stackoverflow.com/questions/30227466/combine-several-images-horizontally-with-python
             otherImages = (finalIndiv, finalCap2, finalCap3, finalCap4)
             concatenatedSequence = Image.new('RGB', (720, 180))
@@ -95,6 +100,14 @@ for sessNum in os.listdir("sessions"):
                 concatenatedSequence.paste(image, (x_offset,0))
                 x_offset += image.size[0]
             
+            other224Images = (final224Indiv, final224Cap2,final224Cap3,final224Cap4)
+            concatenated224Sequence = Image.new('RGB',(224*4,224))
+            x_offset = 0
+            for image in other224Images:
+                concatenated224Sequence.paste(image, (x_offset,0))
+                x_offset += image.size[0]
+            
+            concatenated224Sequence.save("classes/224scaledQuad/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             concatenatedSequence.save("classes/downscaledQuad/{}/sess{}_{}_resized.png".format(capLabel, sessNum, capFileNum))
             
                 
