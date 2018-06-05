@@ -125,6 +125,14 @@ class CloningCNN(nn.Sequential):
                 super().add_module("relu2", nn.ReLU())
                 super().add_module("drop2", nn.Dropout(dropout))
                 super().add_module("linear3", nn.Linear(60, num_classes))
+                
+    def reinitializeFC(self, numReinitialize=2):
+        currentLayer = 1
+        for name, module in super().named_children():
+            if name[:6] == "linear":
+                if currentLayer >= numReinitialize:
+                    module.reset_parameters()
+                currentLayer = currentLayer+1
 
         
         
