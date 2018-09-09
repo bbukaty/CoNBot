@@ -3,3 +3,5 @@ classes/
 .vscode/.ropeproject/
 testing/
 videos/
+.ipynb_checkpoints/
+__pycache__/
