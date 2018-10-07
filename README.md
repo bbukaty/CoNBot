@@ -1,5 +1,5 @@
 # Crypt of the NecroDancer Bot
-In this project for the class [CS231](http://cs231n.stanford.edu/2018/)[N](http://cs231n.stanford.edu/2018/), [Dillon Kanne](https://github.com/dkanne) and I explored using convolutional neural networks combined with reinforcement learning to play the game *Crypt of the NecroDancer*. Here, I give a fairly beginner-friendly explanation of some of the cool things we explored.
+In this project for the class [CS231N](http://cs231n.stanford.edu/2018/), [Dillon Kanne](https://github.com/dkanne) and I explored using convolutional neural networks combined with reinforcement learning to play the game *Crypt of the NecroDancer*. Here, I give a fairly beginner-friendly explanation of some of the cool things we explored.
 
 ## For a quick summary, check out our poster!
 ![](poster.png)
@@ -28,7 +28,7 @@ There are several major downsides to Behavioral Cloning, however. First and fore
 
 This is where **Reinforcement Learning** comes in!
 
-![Source](https://cdn-images-1.medium.com/max/2000/1*aKYFRoEmmKkybqJOvLt2JQ.png)
+![](https://cdn-images-1.medium.com/max/2000/1*aKYFRoEmmKkybqJOvLt2JQ.png)
 
 
 There are already tons of great resources online explaining RL, so I’ll keep it real simple. In Reinforcement Learning, an agent takes actions in the environment, and receives some reward as a result. The goal is to get as many rewards as possible. That’s a very broad problem specification, but the important thing for us is we’re giving an agent information about its performance, which it can use to improve itself. 
@@ -37,13 +37,14 @@ So Reinforcement Learning normally looks like this: an agent flails around semi-
  
 While previously we were training the Behavioral Cloning CNN to maximize accuracy on our gameplay dataset, we now let it loose in the actual game and monitor the rewards it receives every time it plays through a level. For *Crypt of the NecroDancer,* we give the agent a positive reward when it collects gold and a large positive reward if it reaches the end of the level. Now we train the CNN according to these rewards received using an RL algorithm like [Policy Gradients](http://karpathy.github.io/2016/05/31/rl/) or [Q-Learning](https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0) (we tried both).
 
-More technical details, related work, additional discussion and more can be found in [**our**](http://www.buckbukaty.com/CoNBot_report.pdf) [**report**](http://www.buckbukaty.com/CoNBot/report.pdf)**.**
+More technical details, related work, additional discussion and more can be found in [**our report**](report.pdf).
 
 # Results
 
 When using our Behavioral Cloning model as a starting point for RL, it was qualitatively clear that the agent explored the environment in a more useful way. For example, without pre-training, the model would often hit a wall with the shovel repeatedly until the episode timed out, resulting in zero reward. However, the pre-trained model might run through a fair portion of the level, killing one enemy but missing its dropped gold (and thus the reward it should have gotten), then dying to a spike trap or in a complicated combat encounter.
 
-![Q-Learning RL agent performance on a level over the training period. Below: RL agent preinitialized with Behavioral Cloning model. Above: no preinitialization.](demos/condensed_results.png)
+![](demos/condensed_results.png "Preinitialization results")
+*Q-Learning RL agent performance on a level over the training period. Below: RL agent preinitialized with Behavioral Cloning model. Above: no preinitialization.*
 
 
 This provides some intuition for why our quantitative results, seen in the figure above, express only a subtle difference. Nonetheless, the higher variance of the pretrained model’s rewards, combined with the increase in average reward towards the end of the training period, gives us confidence in the efficacy of our pretraining technique.
@@ -61,6 +62,6 @@ The biggest difficulty we encountered in the course of the project was our lack 
 
 This was a really fun project, in which Dillon and I got to apply the things we’d been learning in our AI classes to a domain that we were both interested in. Simple behavioral cloning models that mimicked human gameplay exceeded expectations, and we had a good time naming our Behavioral Cloning model Henry and watching its hapless adventures in randomly generated levels of the game. Attempts to use Behavioral Cloning models as a starting point for more intelligent reinforcement learning algorithms were not quite as successful as we had hoped, especially due to technical limitations of the training process, but nonetheless validated the intuition of the project that such a strategy is promising.
 
-![Henry Forever](https://d2mxuefqeaa7sj.cloudfront.net/s_8EA7034AB571D2BD28D2725E6C28CB1D1B34B2B2FEE2C92DBE67B74E1DB65536_1538561796252_Henry.PNG)
+![Henry Forever](https://d2mxuefqeaa7sj.cloudfront.net/s_8EA7034AB571D2BD28D2725E6C28CB1D1B34B2B2FEE2C92DBE67B74E1DB65536_1538561796252_Henry.PNG "Henry Forever")
 
 
