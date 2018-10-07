@@ -2,7 +2,7 @@
 In this project for the class [CS231](http://cs231n.stanford.edu/2018/)[N](http://cs231n.stanford.edu/2018/), [Dillon Kanne](https://github.com/dkanne) and I explored using convolutional neural networks combined with reinforcement learning to play the game *Crypt of the NecroDancer*. Here, I give a fairly beginner-friendly explanation of some of the cool things we explored.
 
 ## For a quick summary, check out our poster!
-![](demos/crypt_normal.gif)
+![](poster.png)
 
 
 [**PDF Version**](poster.pdf)
