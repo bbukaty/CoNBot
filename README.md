@@ -1,5 +1,5 @@
 # Crypt of the NecroDancer Bot
-In this project for the class [CS231N](http://cs231n.stanford.edu/2018/), [Dillon Kanne](https://github.com/dkanne) and I explored using convolutional neural networks combined with reinforcement learning to play the game *Crypt of the NecroDancer*. Here, I give a fairly beginner-friendly explanation of some of the cool things we explored.
+In this project for the class [CS231N](http://cs231n.stanford.edu/2018/), Amy Kanne and I explored using convolutional neural networks combined with reinforcement learning to play the game *Crypt of the NecroDancer*. Here, I give a fairly beginner-friendly explanation of some of the cool things we explored.
 
 ## For a quick summary, check out our poster!
 ![](poster.png)
@@ -60,7 +60,7 @@ The biggest difficulty we encountered in the course of the project was our lack 
 
 ## In conclusion…
 
-This was a really fun project, in which Dillon and I got to apply the things we’d been learning in our AI classes to a domain that we were both interested in. Simple behavioral cloning models that mimicked human gameplay exceeded expectations, and we had a good time naming our Behavioral Cloning model Henry and watching its hapless adventures in randomly generated levels of the game. Attempts to use Behavioral Cloning models as a starting point for more intelligent reinforcement learning algorithms were not quite as successful as we had hoped, especially due to technical limitations of the training process, but nonetheless validated the intuition of the project that such a strategy is promising.
+This was a really fun project, in which Amy and I got to apply the things we’d been learning in our AI classes to a domain that we were both interested in. Simple behavioral cloning models that mimicked human gameplay exceeded expectations, and we had a good time naming our Behavioral Cloning model Henry and watching its hapless adventures in randomly generated levels of the game. Attempts to use Behavioral Cloning models as a starting point for more intelligent reinforcement learning algorithms were not quite as successful as we had hoped, especially due to technical limitations of the training process, but nonetheless validated the intuition of the project that such a strategy is promising.
 
 ![Henry Forever](https://d2mxuefqeaa7sj.cloudfront.net/s_8EA7034AB571D2BD28D2725E6C28CB1D1B34B2B2FEE2C92DBE67B74E1DB65536_1538561796252_Henry.PNG "Henry Forever")
 
