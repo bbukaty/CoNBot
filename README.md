@@ -6,7 +6,7 @@ In this project for the class [CS231N](http://cs231n.stanford.edu/2018/), Amy Ka
 
 
 [**PDF Version**](poster.pdf)
-…or read the abstract of [our report](report.pdf), if you’re into that.
+…or to get into the details right away, check out [our report](report.pdf).
 
 # Motivation
 
